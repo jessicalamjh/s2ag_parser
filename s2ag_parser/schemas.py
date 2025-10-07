@@ -90,7 +90,6 @@ class S2ORCSchema(BaseSchema):
 class MetadataSchema(BaseSchema):
     title: str
     year: int | None
-    s2fieldsofstudy: list[str] = Field(default_factory=list)
 
 class PaperSchema(MetadataSchema, S2ORCSchema):
     pass

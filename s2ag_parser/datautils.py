@@ -97,3 +97,7 @@ def get_paragraphs_flat(x: dict) -> list[dict]:
         for content in get_contents(x):
             paragrahs_flat += get_paragraphs_flat(content)
     return paragrahs_flat
+
+## General utils
+def strip_whitespace(x: str, delimiter: str) -> str:
+    return delimiter.join(x.split())
