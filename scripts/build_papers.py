@@ -10,7 +10,7 @@ def process_line(line: str) -> dict | None:
     raw_s2orc = json.loads(line)
     try:
         s2orc = build_s2orc(raw_s2orc).model_dump()
-        metadata = corpusid2metadata[s2orc["corpusid"]] 
+        metadata = {"title": None, "year": None}
         paper = PaperSchema(**s2orc, **metadata).model_dump()
         return paper
     except:
@@ -18,18 +18,6 @@ def process_line(line: str) -> dict | None:
         return None
 
 if __name__ == "__main__":
-    # Step 1: load all metadata into memory
-    print(f"Loading metadata...")
-    corpusid2metadata = {}
-    with open("data/extracted/metadata.jsonl", "r") as f:
-        for line in tqdm(f):
-            x = json.loads(line)
-            assert x["corpusid"] not in corpusid2metadata
-            
-            del x["corpusid"] # to avoid duplicating corpusid
-            corpusid2metadata[x["corpusid"]] = x
-
-    # Step 2: Process all papers and combine with metadata (do not create a separate file for s2orc because it takes so much space)
     filepaths = sorted(list(glob.glob("data/raw/s2orc/*")))
     print(f"Total number of filepaths: {len(filepaths)}")
 

@@ -88,7 +88,7 @@ class S2ORCSchema(BaseSchema):
     bibliography: list[BibliographyEntrySchema] = Field(default_factory=list)
 
 class MetadataSchema(BaseSchema):
-    title: str
+    title: str | None
     year: int | None
 
 class PaperSchema(MetadataSchema, S2ORCSchema):

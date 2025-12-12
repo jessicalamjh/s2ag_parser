@@ -425,39 +425,48 @@ def assign_leaf_content_to_sections(
 
     return sections
 
-def nest_sections(sections: list[SectionSchema]) -> list[SectionSchema]:
-    # nest sections based on section level information
-    if any(section.section_level for section in sections):
-        nested_sections = []
-        # keep track of current section nesting in stack
-        stack = []
-        for curr in sections:
-            try:
-                # pop from stack until we find a parent whose n is a prefix
-                while stack:
-                    if curr.section_level[:-1] == stack[-1].section_level:
-                        break
-                    stack.pop()
-            except:
-                pass
+def is_prefix(prefix: list, full: list) -> bool:
+    if not prefix:
+        return False
+    if len(prefix) >= len(full):
+        return False
+    return prefix == full[:len(prefix)]
 
-            if stack:
-                # current section is child of previous section in stack
-                stack[-1].contents.append(curr)
-            else:
-                # current section is new top-level section
-                nested_sections.append(curr)
+def nest_sections(sections):
+    nested_sections = []
+    stack = []
 
-            # add current section to stack
-            stack.append(curr)
+    for curr_idx, curr in enumerate(sections):
+        level = curr.section_level
+        parent = None
+        for p in reversed(stack):
+            if is_prefix(p.section_level, level):
+                parent = p
+                break
 
-        sections = nested_sections
+        if parent:
+            sibling_content_ids = [
+                s.content_id for s in parent.contents
+                if s.content_type == "section"
+            ]
 
-    # FUTUREWORK: nest based on IMRAD heuristics instead # FUTUREWORK: use LLM to perform nesting instead
-    else:
-        pass
+            parent_idx = sections.index(p)
+            for prev in sections[parent_idx+1:curr_idx]:
+                if prev.content_id not in sibling_content_ids:
+                    
+                    for item_idx, item in enumerate(nested_sections):
+                        if item.content_id == prev.content_id:
+                            nested_sections.pop(item_idx)
+                            parent.contents.append(item)
 
-    return sections
+                            break
+
+            parent.contents.append(curr)
+        else:
+            nested_sections.append(curr)
+
+        stack.append(curr)
+    return nested_sections
 
 def reassign_content_ids(sections: list[SectionSchema]):
     old2new_content_id = {}
